@@ -16,8 +16,19 @@ async function handler(req, res){
             })
         }
 
+
         const client = await connectToDatabase()
         const db = client.db()
+
+        const existUser = await db.collection('users').findOne({ email: email})
+
+        if(existUser) {
+            res.status(422).json({
+                message: 'User already exists'
+            })
+            client.close()
+            return 
+        }
 
         const hashedPassword = await hashPassword(password)
         const result = await db.collection('users').insertOne({
@@ -25,11 +36,12 @@ async function handler(req, res){
             password: hashedPassword
         })
 
-        return res.status(201).json({
+         res.status(201).json({
             message:'Create user successfully !'
         })
+        client.close()
     } catch (error) {
-        console.error('Error creating user:', error)
+        console.log('Error creating user:', error)
         return res.status(500).json({
             message: 'Internal Server Error'
         })
