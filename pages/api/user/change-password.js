@@ -8,6 +8,7 @@ async function handler(req, res) {
     return;
   }
 
+  
   const session = await getSession({ req: req });
 
   if (!session) {
