@@ -1,31 +1,39 @@
 import { hashPassword } from "../../../lib/auth"
 import { connectToDatabase } from "../../../lib/db"
 
-
-async function handler(req,res){
-    const data = req.body 
-    const { email, password } = data 
-
-    if(!email || !email.includes('@') || !password || !password.length < 7) {
-        res.status(422).json({
-            message: 'Invalid email or password'
-        })
-        return 
+async function handler(req, res){
+    if(req.method !== "POST"){
+        return res.status(405).end() // Method Not Allowed
     }
 
-    const client = await connectToDatabase()
+    try {
+        const data = req.body 
+        const { email, password } = data 
 
-    const db = client.db()
-    const result = db.collection('users').insertOne({
-        email: email,
-        password: hashPassword(password)
-    })
+        if(!email || !email.includes('@') || !password) {
+            return res.status(422).json({
+                message: 'Invalid email or password'
+            })
+        }
 
-    console.log('result',result);
+        const client = await connectToDatabase()
+        const db = client.db()
 
-    res.status(201).json({
-        message:'Create user successfully !'
-    })
+        const hashedPassword = await hashPassword(password)
+        const result = await db.collection('users').insertOne({
+            email: email,
+            password: hashedPassword
+        })
+
+        return res.status(201).json({
+            message:'Create user successfully !'
+        })
+    } catch (error) {
+        console.error('Error creating user:', error)
+        return res.status(500).json({
+            message: 'Internal Server Error'
+        })
+    }
 }
 
 export default handler
