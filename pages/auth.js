@@ -8,6 +8,7 @@ function AuthPage() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+
   useEffect(() => {
     getSession().then((session) => {
       if (session) {
@@ -17,6 +18,7 @@ function AuthPage() {
       }
     });
   }, [router]);
+  
 
   if (isLoading) {
     return <p>Loading...</p>;
